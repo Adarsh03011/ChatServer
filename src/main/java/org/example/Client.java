@@ -65,7 +65,9 @@ public class Client {
 				in.close();
 				out.close();
 				socket.close();
-		}catch(Exception e) {}
+		}catch(Exception e) {
+			display("Exception: " + e);
+		}
 		}
 	public static void main(String[] args) {
 		int portNumber = 5555;
