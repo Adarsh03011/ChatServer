@@ -112,12 +112,12 @@ public class Server {
 		server.Start();
 	}
 	class Handler implements Runnable {
-		Socket socket;
-		ObjectInputStream in;
-		ObjectOutputStream out;
-		int id;
-		String username;
-		ChatMessage cm;
+		private Socket socket;
+		private ObjectInputStream in;
+		private ObjectOutputStream out;
+		private int id;
+		private String username;
+		private ChatMessage cm;
 		Handler(Socket socket) {
 			id = ++uniqueId;
 			this.socket = socket;
