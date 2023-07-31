@@ -2,7 +2,6 @@ package org.example;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -15,7 +14,7 @@ public class Server {
 		this.port = port;
 		users = new ArrayList<>();
 	}
-	public void Start() {
+	public void startServer() {
 		boolean Continue = true;
 		try 
 		{
@@ -62,6 +61,7 @@ public class Server {
 		boolean isPrivate =  false;
 		if(arr[1].charAt(0)=='@')
 			isPrivate = true;
+		String sender = arr[0].replace(":","");
 		if(isPrivate)
 		{
 			String receiver=arr[1].substring(1);
@@ -83,13 +83,15 @@ public class Server {
 		}
 		else
 		{
-			System.out.print(message);
+			display(message);
 			int i = users.size();
 			while (--i >= 0) {
 				Handler h1 = users.get(i);
-				if(!h1.writeMsg(message)) {
-					users.remove(i);
-					display("Disconnected Client " + h1.username);
+				if(!sender.equals(h1.username)){
+					if(!h1.writeMsg(message)) {
+						users.remove(i);
+						display("Disconnected Client " + h1.username);
+					}
 				}
 			}
 		}
@@ -109,7 +111,7 @@ public class Server {
 	public static void main(String[] args) {
 		int portNumber = 5555;
 		Server server = new Server(portNumber);
-		server.Start();
+		server.startServer();
 	}
 	class Handler implements Runnable {
 		private Socket socket;
@@ -131,7 +133,7 @@ public class Server {
 						username += "1";
 					}
 				}
-				broadcast("\n" + username + " has joined the chat room.");
+				broadcast(username + " has joined the chat room.");
 			} catch (IOException | ClassNotFoundException e) {
 				display("Exception: " + e);
 			}
@@ -143,10 +145,7 @@ public class Server {
 			while (true) {
 				try {
 					cm = (ChatMessage) in.readObject();
-				} catch (IOException e) {
-					display(" Exception: " + e);
-					break;
-				} catch (ClassNotFoundException e2) {
+				} catch (IOException | ClassNotFoundException e) {
 					break;
 				}
 				String message = cm.getMessage();
