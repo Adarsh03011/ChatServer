@@ -1,26 +1,27 @@
 package org.example;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
 
 public class Client {
+	private static BufferedReader br;
 	private ObjectInputStream in;
 	private ObjectOutputStream out;
-	private Socket socket;
+	public static Socket socket;
 	private String host;
-	private  String username;
+	private String username;
 	private final int port;
-
-	Client(String server, int port, String username) { 
+	Client(String server, int port, String username) {
 		this.host = server;
 		this.port = port;
 		this.username = username;
 	}
 	private void display(String msg) {
 		System.out.println(msg);
+	}
+	public boolean checkSocket(){
+		return socket.isClosed();
 	}
 	public boolean start() {
 		try {
@@ -31,6 +32,7 @@ public class Client {
 		}
 		try
 		{
+			br = new BufferedReader(new InputStreamReader(System.in));
 			in = new ObjectInputStream(socket.getInputStream());
 			out = new ObjectOutputStream(socket.getOutputStream());
 		}
@@ -62,14 +64,15 @@ public class Client {
 	}
 	private void disconnect() {
 		try {
-				in.close();
-				out.close();
-				socket.close();
+			br.close();
+			in.close();
+			out.close();
+			socket.close();
 		}catch(Exception e) {
 			display("Exception: " + e);
 		}
-		}
-	public static void main(String[] args) {
+	}
+	public static void main(String[] args) throws IOException, InterruptedException {
 		int portNumber = 5555;
 		String host = "localhost";
 		String userName;
@@ -83,21 +86,27 @@ public class Client {
 		System.out.println("Type '@username yourMessage' to send a private message");
 		System.out.println("Type 'Active' to see list of active clients");
 		System.out.println("Type 'Logout' to logoff from server");
-		while(true) {
-			String msg = sc.nextLine();
-			if(msg.equals("Logout")) {
-				client.sendMessage(new ChatMessage(ChatMessage.Logout, ""));
+		while(!client.checkSocket()) {
+			String msg = br.ready() ? br.readLine() : "";
+			if(msg.isEmpty()){
+				continue;
+			}
+			if(!client.checkSocket()) {
+				if (msg.equals("Logout")) {
+					client.sendMessage(new ChatMessage(ChatMessage.Logout, ""));
+					break;
+				} else if (msg.equals("Active")) {
+					client.sendMessage(new ChatMessage(ChatMessage.Active, ""));
+				} else {
+					client.sendMessage(new ChatMessage(ChatMessage.Message, msg));
+				}
+			}
+			else{
 				break;
-			}
-			else if(msg.equals("Active")) {
-				client.sendMessage(new ChatMessage(ChatMessage.Active, ""));				
-			}
-			else {
-				client.sendMessage(new ChatMessage(ChatMessage.Message, msg));
 			}
 		}
 		sc.close();
-		client.disconnect();	
+		client.disconnect();
 	}
 	class Listener implements Runnable {
 		public void run() {
@@ -105,8 +114,12 @@ public class Client {
 				try {
 					String msg = in.readObject().toString();
 					System.out.println(msg);
+					if(msg.equals("Closing the server complete all process and logout")) {
+						socket.close();
+						break;
+					}
 				}
-				catch(IOException | ClassNotFoundException e) {
+				catch(IOException | ClassNotFoundException | NullPointerException e) {
 					display( "Server has closed the connection: " + e);
 					break;
 				}

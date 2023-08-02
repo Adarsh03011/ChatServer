@@ -1,14 +1,17 @@
 package org.example;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Server {
 	private static int uniqueId;
-	private static ArrayList<Handler> users;
+	public ServerSocket serverSocket;
+	private static List<Handler> users;
 	private int port;
 	public Server(int port) {
 		this.port = port;
@@ -16,9 +19,9 @@ public class Server {
 	}
 	public void startServer() {
 		boolean Continue = true;
-		try 
+		try
 		{
-			ServerSocket serverSocket = new ServerSocket(port);
+			serverSocket = new ServerSocket(port);
 			display("Server waiting for Clients on port " + port + ".");
 			while(Continue)
 			{
@@ -35,9 +38,9 @@ public class Server {
 				for(int i = 0; i < users.size(); ++i) {
 					Handler h = users.get(i);
 					try {
-					h.in.close();
-					h.out.close();
-					h.socket.close();
+						h.in.close();
+						h.out.close();
+						h.socket.close();
 					}
 					catch(IOException e) {
 						e.printStackTrace();
@@ -49,14 +52,14 @@ public class Server {
 			}
 		}
 		catch (IOException e) {
-            String msg = ( " Exception on new ServerSocket: " + e + "\n");
+			String msg = ( " Exception on new ServerSocket: " + e + "\n");
 			display(msg);
 		}
 	}
-	private void display(String msg) {
+	private static void display(String msg) {
 		System.out.println(msg);
 	}
-	private synchronized void broadcast(String message) {
+	private static synchronized void broadcast(String message) {
 		String[] arr = message.split(" ",3);
 		boolean isPrivate =  false;
 		if(arr[1].charAt(0)=='@')
@@ -108,8 +111,15 @@ public class Server {
 		}
 		broadcast(disconnectedClient + " has left the chat room." );
 	}
+	public static class A extends Thread{
+		@Override
+		public void run() {
+			broadcast("Closing the server complete all process and logout");
+		}
+	}
 	public static void main(String[] args) {
 		int portNumber = 5555;
+		Runtime.getRuntime().addShutdownHook(new A());
 		Server server = new Server(portNumber);
 		server.startServer();
 	}
@@ -168,9 +178,9 @@ public class Server {
 		}
 		private void close() {
 			try {
-					out.close();
-					in.close();
-					socket.close();
+				out.close();
+				in.close();
+				socket.close();
 			} catch (Exception e) {
 				System.out.println("Exception occurred : " + e);
 			}
@@ -184,7 +194,6 @@ public class Server {
 				out.writeObject(msg);
 			} catch (IOException e) {
 				display("Exception " + e);
-				display(e.toString());
 			}
 			return true;
 		}
