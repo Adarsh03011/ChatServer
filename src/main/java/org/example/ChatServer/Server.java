@@ -1,4 +1,9 @@
-package org.example;
+package org.example.ChatServer;
+
+import org.example.Message.Admin.ActiveMessage;
+import org.example.Message.Admin.LogoutMessage;
+import org.example.Message.ChatMessage;
+import org.example.Message.UserMessage;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -157,17 +162,15 @@ public class Server {
 				try {
 					cm = (ChatMessage) in.readObject();
 				} catch (IOException | ClassNotFoundException e) {
+					break;				}
+				if (cm instanceof UserMessage) {
+					broadcast(username + ": " + cm.getMessage());
+				}
+				if (cm instanceof LogoutMessage) {
+					broadcast( username + ": " + cm.getMessage());
 					break;
 				}
-				Message message = cm.getMessage();
-				if (cm.getType() == 1) {
-					broadcast(username + ": " + message);
-				}
-				if (cm.getType() == 2) {
-					broadcast( username + ": " +  message);
-					break;
-				}
-				if (cm.getType() == 0) {
+				if (cm instanceof ActiveMessage) {
 					display(username + " checked active clients list.");
 					writeMsg("List of the users connected ");
 					for (Handler ct : users) {

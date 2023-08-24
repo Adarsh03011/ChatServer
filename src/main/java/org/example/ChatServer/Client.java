@@ -1,4 +1,9 @@
-package org.example;
+package org.example.ChatServer;
+
+import org.example.Message.Admin.ActiveMessage;
+import org.example.Message.Admin.LogoutMessage;
+import org.example.Message.ChatMessage;
+import org.example.Message.UserMessage;
 
 import java.io.*;
 import java.net.Socket;
@@ -90,24 +95,17 @@ public class Client {
 		System.out.println("Type 'Logout' to logoff from server");
 		while(!client.checkSocket()) {
 			String msg = br.ready() ? br.readLine() : "";
-			String [] msg2 = msg.split(",");
 			if(msg.isEmpty()){
 				continue;
-			}else {
-
 			}
 			if(!client.checkSocket()) {
-				if (msg2[0].equals("Logout")) {
-					if(msg2.length == 1) {
-						client.sendMessage(new ChatMessage(ChatMessage.Logout, new LogoutMessage(2, "Have to leave, see you guys again.")));
-					} else if (msg2.length == 2) {
-						client.sendMessage(new ChatMessage(ChatMessage.Logout,new LogoutMessage(2,msg2[1])));
-					}
+				if (msg.equals("Logout")) {
+					client.sendMessage(new LogoutMessage(1,"Logging off"));
 					break;
 				} else if (msg.equals("Active")) {
-					client.sendMessage(new ChatMessage(ChatMessage.Active, null));
+					client.sendMessage(new ActiveMessage(2, "Checking Active List"));
 				} else {
-					client.sendMessage(new ChatMessage(ChatMessage.Message,  new Message(random.nextInt(500),msg)));
+					client.sendMessage(new UserMessage(3,msg));
 				}
 			}
 			else{
