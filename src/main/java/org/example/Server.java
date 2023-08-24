@@ -19,7 +19,7 @@ public class Server {
 	}
 	public void startServer() {
 		boolean Continue = true;
-		try
+		try 
 		{
 			serverSocket = new ServerSocket(port);
 			display("Server waiting for Clients on port " + port + ".");
@@ -38,9 +38,9 @@ public class Server {
 				for(int i = 0; i < users.size(); ++i) {
 					Handler h = users.get(i);
 					try {
-						h.in.close();
-						h.out.close();
-						h.socket.close();
+					h.in.close();
+					h.out.close();
+					h.socket.close();
 					}
 					catch(IOException e) {
 						e.printStackTrace();
@@ -52,7 +52,7 @@ public class Server {
 			}
 		}
 		catch (IOException e) {
-			String msg = ( " Exception on new ServerSocket: " + e + "\n");
+            String msg = ( " Exception on new ServerSocket: " + e + "\n");
 			display(msg);
 		}
 	}
@@ -109,13 +109,13 @@ public class Server {
 				break;
 			}
 		}
-		broadcast(disconnectedClient + " has left the chat room." );
+		display(disconnectedClient + " has left the chat room." );
 	}
 	public static class A extends Thread{
-		@Override
-		public void run() {
-			broadcast("Closing the server complete all process and logout");
-		}
+			@Override
+			public void run() {
+				broadcast("Closing the server complete all process and logout");
+			}
 	}
 	public static void main(String[] args) {
 		int portNumber = 5555;
@@ -143,7 +143,7 @@ public class Server {
 						username += "1";
 					}
 				}
-				broadcast(username + " has joined the chat room.");
+				display(username + " has joined the chat room.");
 			} catch (IOException | ClassNotFoundException e) {
 				display("Exception: " + e);
 			}
@@ -152,21 +152,23 @@ public class Server {
 			return username;
 		}
 		public void run() {
+			int logout_id = 2;
 			while (true) {
 				try {
 					cm = (ChatMessage) in.readObject();
 				} catch (IOException | ClassNotFoundException e) {
 					break;
 				}
-				String message = cm.getMessage();
+				Message message = cm.getMessage();
 				if (cm.getType() == 1) {
 					broadcast(username + ": " + message);
 				}
 				if (cm.getType() == 2) {
-					display( username + " disconnected.");
+					broadcast( username + ": " +  message);
 					break;
 				}
 				if (cm.getType() == 0) {
+					display(username + " checked active clients list.");
 					writeMsg("List of the users connected ");
 					for (Handler ct : users) {
 						writeMsg(ct.username);
@@ -178,9 +180,9 @@ public class Server {
 		}
 		private void close() {
 			try {
-				out.close();
-				in.close();
-				socket.close();
+					out.close();
+					in.close();
+					socket.close();
 			} catch (Exception e) {
 				System.out.println("Exception occurred : " + e);
 			}

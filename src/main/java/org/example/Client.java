@@ -2,6 +2,7 @@ package org.example;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Random;
 import java.util.Scanner;
 
 public class Client {
@@ -12,7 +13,7 @@ public class Client {
 	private String host;
 	private String username;
 	private final int port;
-	Client(String server, int port, String username) {
+	Client(String server, int port, String username) { 
 		this.host = server;
 		this.port = port;
 		this.username = username;
@@ -64,15 +65,16 @@ public class Client {
 	}
 	private void disconnect() {
 		try {
-			br.close();
-			in.close();
-			out.close();
-			socket.close();
+				br.close();
+				in.close();
+				out.close();
+				socket.close();
 		}catch(Exception e) {
 			display("Exception: " + e);
 		}
 	}
 	public static void main(String[] args) throws IOException, InterruptedException {
+		Random random = new Random();
 		int portNumber = 5555;
 		String host = "localhost";
 		String userName;
@@ -88,17 +90,24 @@ public class Client {
 		System.out.println("Type 'Logout' to logoff from server");
 		while(!client.checkSocket()) {
 			String msg = br.ready() ? br.readLine() : "";
+			String [] msg2 = msg.split(",");
 			if(msg.isEmpty()){
 				continue;
+			}else {
+
 			}
 			if(!client.checkSocket()) {
-				if (msg.equals("Logout")) {
-					client.sendMessage(new ChatMessage(ChatMessage.Logout, ""));
+				if (msg2[0].equals("Logout")) {
+					if(msg2.length == 1) {
+						client.sendMessage(new ChatMessage(ChatMessage.Logout, new LogoutMessage(2, "Have to leave, see you guys again.")));
+					} else if (msg2.length == 2) {
+						client.sendMessage(new ChatMessage(ChatMessage.Logout,new LogoutMessage(2,msg2[1])));
+					}
 					break;
 				} else if (msg.equals("Active")) {
-					client.sendMessage(new ChatMessage(ChatMessage.Active, ""));
+					client.sendMessage(new ChatMessage(ChatMessage.Active, null));
 				} else {
-					client.sendMessage(new ChatMessage(ChatMessage.Message, msg));
+					client.sendMessage(new ChatMessage(ChatMessage.Message,  new Message(random.nextInt(500),msg)));
 				}
 			}
 			else{
@@ -106,7 +115,7 @@ public class Client {
 			}
 		}
 		sc.close();
-		client.disconnect();
+		client.disconnect();	
 	}
 	class Listener implements Runnable {
 		public void run() {

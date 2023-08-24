@@ -5,9 +5,9 @@ import java.io.Serializable;
 class ChatMessage implements Serializable {
     static final int Active = 0, Message = 1, Logout = 2;
     private int type;
-    private String message;
+    private Message message;
 
-    ChatMessage(int type, String message) {
+    ChatMessage(int type, Message message) {
         this.type = type;
         this.message = message;
     }
@@ -16,7 +16,7 @@ class ChatMessage implements Serializable {
         return type;
     }
 
-    public String getMessage() {
+    public Message getMessage() {
         return message;
     }
 }
